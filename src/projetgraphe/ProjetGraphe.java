@@ -19,11 +19,14 @@ public class ProjetGraphe {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        Greedy(createGraphe1());
-        WelshPowell(createGraphe1());
+        int sens = -1;
+        Greedy(createGraphe1(), sens);
+        WelshPowell(createGraphe1(), sens);
+        Dsatur(createGraphe1(), sens);
         System.out.println("======= Suite ======");
-        Greedy(createGraphe2());
-        WelshPowell(createGraphe2());
+        Greedy(createGraphe2(), sens);
+        WelshPowell(createGraphe2(), sens);
+        Dsatur(createGraphe2(), sens);
     }
 
     public static Graphe createGraphe1() {
@@ -104,10 +107,17 @@ public class ProjetGraphe {
         return graphe;
     }
 
-    public static void WelshPowell(Graphe graphe) {
+    public static void WelshPowell(Graphe graphe, int tri) {
         ArrayList<Noeud> listeSommets = graphe.getSommets();
-        Collections.sort(listeSommets, Collections.reverseOrder());
-        // Classe les sommets par ordre décroissant de degrés
+        if(tri > 0) {
+            // Sens ascendant (sur les degrés)
+            Collections.sort(listeSommets);
+        } else if(tri < 0) {
+            // Sens descendant (sur les degrés)
+            Collections.sort(listeSommets, Collections.reverseOrder());
+        } else {
+            // aléatoire
+        }
         ArrayList<Noeud> colories = new ArrayList<>();
         
         Noeud x = null;
@@ -119,57 +129,100 @@ public class ProjetGraphe {
             x.setColor(k);
             colories.add(x);
             listeSommets.remove(x);
-            y = listeSommets.get(0);
-            for(int i = 1; i < listeSommets.size(); i++) {
-                if(!y.hasAdjacentWithColor(k)) {
-                    y.setColor(k);
-                    colories.add(y);
-                    listeSommets.remove(y);
-                }
+            if(!listeSommets.isEmpty()) {
                 y = listeSommets.get(0);
+                for(int i = 0; i < listeSommets.size(); i++) {
+                    int index = listeSommets.indexOf(y);
+                    if(!y.hasAdjacentWithColor(k)) {
+                        y.setColor(k);
+                        colories.add(y);
+                        listeSommets.remove(y);
+                        if(index < listeSommets.size()) {
+                            y = listeSommets.get(index);
+                        }
+                    } else {
+                        if(index+1 < listeSommets.size()) {
+                            y = listeSommets.get(index + 1);
+                        }
+                    }
+                }
+                k++;
             }
-            k++;
+            
         }
         
         printColoredGraphe(colories);
-        
-        /*
-        WelshPowell(G = (X, U), c);
-        {
-            Ranger les sommets par ordre de degrés décroissant dans la liste ordonnée L;
-            k = 1;
-            tant que (L non vide) faire
-            {
-                x = 1er sommet de L;
-                c(x) = k;
-                Enlever x de L;
-                y = 1er sommet de L;
-                tant que (fin de liste L non atteinte) faire
-                {
-                    si(y non adjacent à un sommet de couleur k) alors
-                    {
-                        c(y) = k;
-                        Enlever y de L;
-                    }
-                    y = sommet suivant dans L;
-                }
-                k = k + 1;
-            }
-        }
-         */
     }
 
-    public static void Dsatur() {
+    public static void Dsatur(Graphe graphe, int tri) {
+        ArrayList<Noeud> listeSommets = graphe.getSommets();
+        if(tri > 0) {
+            // Sens ascendant (sur les degrés)
+            Collections.sort(listeSommets);
+        } else if(tri < 0) {
+            // Sens descendant (sur les degrés)
+            Collections.sort(listeSommets, Collections.reverseOrder());
+        } else {
+            // aléatoire
+        }
+        ArrayList<Noeud> colories = new ArrayList<>();
+        
+        Noeud x = null;
+        Noeud y = null;
+        int k = 1;
+        
+        while(!listeSommets.isEmpty()) {
+            x = listeSommets.get(0);
+            x.setColor(k);
+            colories.add(x);
+            listeSommets.remove(x);
+            if(!listeSommets.isEmpty()) {
+                y = listeSommets.get(0);
+                for(int i = 0; i < listeSommets.size(); i++) {
+                    int index = listeSommets.indexOf(y);
+                    if(!y.hasAdjacentWithColor(k)) {
+                        y.setColor(k);
+                        colories.add(y);
+                        listeSommets.remove(y);
+                    }
+                    
+                    if(index+1 < listeSommets.size()) {
+                        int maxSatur = -1;
+                        Noeud tmp = null;
+                        for(int j = i; j < listeSommets.size(); j++) {
+                            if(listeSommets.get(j).dsatValue() > maxSatur) {
+                                maxSatur = listeSommets.get(j).dsatValue();
+                                tmp = listeSommets.get(j);
+                            }
+                        }
+                        y = tmp;
+                    }
+                }
+                k++;
+            }
+            
+        }
+        
+        printColoredGraphe(colories);
         /*
         Idem que WelshPowell
         On met en priorité les sommets avec beaucoup de voisins coloriés
+        Aide : http://prolland.free.fr/works/research/dsatphp/dsat.txt
+        http://prolland.free.fr/Cours/Cycle2/Maitrise/GraphsTheory/TP/PrgGraphDsat/dsat_simple_c.txt
          */
     }
 
-    public static void Greedy(Graphe graphe) {
+    public static void Greedy(Graphe graphe, int tri) {
         ArrayList<Noeud> listeSommets = graphe.getSommets();
-        Collections.sort(listeSommets, Collections.reverseOrder());
-        // Classe les sommets par ordre décroissant de degrés
+        if(tri > 0) {
+            // Sens ascendant (sur les degrés)
+            Collections.sort(listeSommets);
+        } else if(tri < 0) {
+            // Sens descendant (sur les degrés)
+            Collections.sort(listeSommets, Collections.reverseOrder());
+        } else {
+            // aléatoire
+        }
         ArrayList<Noeud> colories = new ArrayList<>();
         
         Noeud x = null;
