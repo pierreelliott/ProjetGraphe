@@ -5,7 +5,14 @@
  */
 package projetgraphe;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -17,7 +24,25 @@ public class Graphe {
         this.sommets = new ArrayList<>();
     }
 
-    public static Graphe load(String fileContent) {
+    public static Graphe loadFromFile(String filename) {
+        File file = new File(filename);
+        BufferedInputStream fileStream;
+        String fileContent = "";
+        try {
+            fileStream = new BufferedInputStream(new FileInputStream(file));
+            byte fileData[] = new byte[(int) file.length()];
+            fileStream.read(fileData);
+            fileContent = new String(fileData);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Graphe.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Graphe.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return loadFromString(fileContent);
+    }
+    
+    public static Graphe loadFromString(String fileContent) {
         // Créer sommets
         String[] tab = fileContent.split("--- Liste des sommets\n")[1]
                 .split("--- Liste des aretes\n");
@@ -56,7 +81,7 @@ public class Graphe {
     public ArrayList<Noeud> getCopyOfSommets() {
         // TODO
         // A faire après
-        return sommets;
+        return new ArrayList<>(sommets);
     }
 
     @Override

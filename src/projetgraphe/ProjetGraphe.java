@@ -20,13 +20,20 @@ public class ProjetGraphe {
      */
     public static void main(String[] args) {
         int sens = -1;
-        Greedy(createGraphe1(), sens);
-        WelshPowell(createGraphe1(), sens);
-        Dsatur(createGraphe1(), sens);
+        Graphe graphe = createGraphe1();
+        Greedy(graphe, sens);
+        WelshPowell(graphe, sens);
+        Dsatur(graphe, sens);
         System.out.println("======= Suite ======");
-        Greedy(createGraphe2(), sens);
-        WelshPowell(createGraphe2(), sens);
-        Dsatur(createGraphe2(), sens);
+        graphe = createGraphe2();
+        Greedy(graphe, sens);
+        WelshPowell(graphe, sens);
+        Dsatur(graphe, sens);
+        System.out.println("======= Suite ======");
+        graphe = Graphe.loadFromFile("crown10.txt");
+        Greedy(graphe, sens);
+        WelshPowell(graphe, sens);
+        Dsatur(graphe, sens);
     }
 
     public static Graphe createGraphe1() {
@@ -108,7 +115,7 @@ public class ProjetGraphe {
     }
 
     public static void WelshPowell(Graphe graphe, int tri) {
-        ArrayList<Noeud> listeSommets = graphe.getSommets();
+        ArrayList<Noeud> listeSommets = graphe.getCopyOfSommets();
         if(tri > 0) {
             // Sens ascendant (sur les degrés)
             Collections.sort(listeSommets);
@@ -152,10 +159,11 @@ public class ProjetGraphe {
         }
         
         printColoredGraphe(colories);
+        System.out.println("nombre de couleurs : " + colories.stream().map(s -> s.getColor()).distinct().count());
     }
 
     public static void Dsatur(Graphe graphe, int tri) {
-        ArrayList<Noeud> listeSommets = graphe.getSommets();
+        ArrayList<Noeud> listeSommets = graphe.getCopyOfSommets();
         if(tri > 0) {
             // Sens ascendant (sur les degrés)
             Collections.sort(listeSommets);
@@ -204,6 +212,7 @@ public class ProjetGraphe {
         }
         
         printColoredGraphe(colories);
+        System.out.println("nombre de couleurs : " + colories.stream().map(s -> s.getColor()).distinct().count());
         /*
         Idem que WelshPowell
         On met en priorité les sommets avec beaucoup de voisins coloriés
@@ -213,7 +222,7 @@ public class ProjetGraphe {
     }
 
     public static void Greedy(Graphe graphe, int tri) {
-        ArrayList<Noeud> listeSommets = graphe.getSommets();
+        ArrayList<Noeud> listeSommets = graphe.getCopyOfSommets();
         if(tri > 0) {
             // Sens ascendant (sur les degrés)
             Collections.sort(listeSommets);
@@ -235,6 +244,7 @@ public class ProjetGraphe {
         }
         
         printColoredGraphe(colories);
+        System.out.println("nombre de couleurs : " + colories.stream().map(s -> s.getColor()).distinct().count());
     }
     
     public static List<Noeud> sort() {
