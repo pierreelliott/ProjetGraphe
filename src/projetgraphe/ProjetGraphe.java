@@ -8,6 +8,7 @@ package projetgraphe;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  *
@@ -19,21 +20,127 @@ public class ProjetGraphe {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+//        System.out.println("======== Test ========");
+        Graphe graphe;
+//        graphe = createGraphe1();
+//        testGraphe(graphe, "Graphe statique 1");
+//        graphe = createGraphe2();
+//        testGraphe(graphe, "Graphe statique 2");
+        graphe = Graphe.loadFromFile("crown10.txt");
+        testGraphe(graphe, "Graphe crown10");
+        graphe = Graphe.loadFromFile("queen5_5.txt");
+        testGraphe(graphe, "Graphe queen 5x5");
+    }
+
+    public static void testGraphe(Graphe graphe, String nomTest) {
+        boolean extendedResults = false;
+        System.out.println("======================================");
+        System.out.println("======== Test '"+ nomTest +"' ========");
+        System.out.println("-------- Test tri décroissant --------");
+        int sens = -1;
+        testAlgo(1, sens, graphe, true, extendedResults);
+        testAlgo(2, sens, graphe, true, extendedResults);
+        testAlgo(3, sens, graphe, true, extendedResults);
+        System.out.println("--------------------------------------");
+        System.out.println("-------- Test tri croissant --------");
+        sens = 1;
+        testAlgo(1, sens, graphe, true, extendedResults);
+        testAlgo(2, sens, graphe, true, extendedResults);
+        testAlgo(3, sens, graphe, true, extendedResults);
+        System.out.println("--------------------------------------");
+        System.out.println("-------- Test tri aléatoire --------");
+        sens = 0;
+        testAlgo(1, sens, graphe, true, extendedResults);
+        testAlgo(2, sens, graphe, true, extendedResults);
+        testAlgo(3, sens, graphe, true, extendedResults);
+        System.out.println("--------------------------------------");
+    }
+
+    public void test1() {
         int sens = -1;
         Graphe graphe = createGraphe1();
-        Greedy(graphe, sens);
-        WelshPowell(graphe, sens);
-        Dsatur(graphe, sens);
+        Greedy(trierSommets(graphe, sens));
+        WelshPowell(trierSommets(graphe, sens));
+        Dsatur(trierSommets(graphe, sens));
         System.out.println("======= Suite ======");
         graphe = createGraphe2();
-        Greedy(graphe, sens);
-        WelshPowell(graphe, sens);
-        Dsatur(graphe, sens);
+        Greedy(trierSommets(graphe, sens));
+        WelshPowell(trierSommets(graphe, sens));
+        Dsatur(trierSommets(graphe, sens));
         System.out.println("======= Suite ======");
         graphe = Graphe.loadFromFile("crown10.txt");
-        Greedy(graphe, sens);
-        WelshPowell(graphe, sens);
-        Dsatur(graphe, sens);
+        Greedy(trierSommets(graphe, sens));
+        WelshPowell(trierSommets(graphe, sens));
+        Dsatur(trierSommets(graphe, sens));
+    }
+
+    public static long testAlgo(int numAlgo, int sensDeTri, Graphe graphe,
+                                boolean resetPreviousColoration, boolean printExtendedResults) {
+        if(resetPreviousColoration) {
+            graphe.resetColoration();
+        }
+
+        ArrayList<Noeud> sommets = trierSommets(graphe, sensDeTri);
+        ArrayList<Noeud> colories;
+        String[] algos = { "Greedy", "WelshPowell", "Dsatur" };
+
+        // Regarder le temps
+        // (on oublie le temps de tri des sommets puisque ce n'est pas ce qui est intéressant ici)
+        long startTime = System.currentTimeMillis();
+
+        if(numAlgo == 1) {
+            colories = Greedy(sommets);
+        } else if(numAlgo == 2) {
+            colories = WelshPowell(sommets);
+        } else {
+            colories = Dsatur(sommets);
+        }
+
+        // Regarder le temps d'exécution
+        long finishTime = System.currentTimeMillis();
+        long elapsedTime = finishTime - startTime;
+        long nbColors = colories.stream().map(s -> s.getColor()).distinct().count();
+        graphe.setColorationNumber(nbColors);
+
+        System.out.println("======= Algo '"+ algos[numAlgo-1] +"' ======");
+        if(printExtendedResults) {
+            printColoredGraphe(colories);
+        }
+        System.out.println("Nombre de couleurs : " + nbColors);
+        System.out.println("Temps d'exécution : " + elapsedTime + " milliseconde(s)");
+
+        return elapsedTime;
+    }
+
+    public static ArrayList<Noeud> trierSommets(Graphe graphe, int tri) {
+        ArrayList<Noeud> sommets = graphe.getCopyOfSommets();
+        ArrayList<Noeud> sommetsTries = new ArrayList<>();
+
+        // Tri
+        if(tri > 0) {
+            // Sens ascendant (sur les degrés)
+            Collections.sort(sommets);
+            sommetsTries = sommets;
+        } else if(tri < 0) {
+            // Sens descendant (sur les degrés)
+            Collections.sort(sommets, Collections.reverseOrder());
+            sommetsTries = sommets;
+        } else {
+            // Tri aléatoire
+            int size = sommets.size();
+            int i = 0;
+            Random rand = new Random();
+            while(!sommets.isEmpty()) {
+                int randomValue = rand.nextInt(sommets.size());
+                sommetsTries.add(sommets.get(randomValue));
+                sommets.remove(sommets.get(randomValue));
+                if(i == size) {
+                    System.out.println("Erreur tri aléatoire !");
+                }
+            }
+        }
+
+        return sommetsTries;
     }
 
     public static Graphe createGraphe1() {
@@ -45,21 +152,21 @@ public class ProjetGraphe {
         Noeud n4 = new Noeud();
         Noeud n5 = new Noeud();
         
-        n1.addArrete(n2);
-        n2.addArrete(n1);
-        n1.addArrete(n3);
-        n3.addArrete(n1);
+        n1.addArete(n2);
+        n2.addArete(n1);
+        n1.addArete(n3);
+        n3.addArete(n1);
         
-        n2.addArrete(n3);
-        n3.addArrete(n2);
-        n2.addArrete(n4);
-        n4.addArrete(n2);
+        n2.addArete(n3);
+        n3.addArete(n2);
+        n2.addArete(n4);
+        n4.addArete(n2);
         
-        n3.addArrete(n4);
-        n4.addArrete(n3);
+        n3.addArete(n4);
+        n4.addArete(n3);
         
-        n4.addArrete(n5);
-        n5.addArrete(n4);
+        n4.addArete(n5);
+        n5.addArete(n4);
         
         sommets.add(n1);
         sommets.add(n2);
@@ -83,23 +190,23 @@ public class ProjetGraphe {
         Noeud n6 = new Noeud();
         Noeud n7 = new Noeud();
         
-        n1.addArrete(n2, true);
-        n1.addArrete(n3, true);
-        n1.addArrete(n4, true);
+        n1.addArete(n2, true);
+        n1.addArete(n3, true);
+        n1.addArete(n4, true);
         
-        n2.addArrete(n3, true);
-        n2.addArrete(n4, true);
-        n2.addArrete(n5, true);
+        n2.addArete(n3, true);
+        n2.addArete(n4, true);
+        n2.addArete(n5, true);
         
-        n3.addArrete(n6, true);
+        n3.addArete(n6, true);
         
-        n4.addArrete(n5, true);
-        n4.addArrete(n7, true);
+        n4.addArete(n5, true);
+        n4.addArete(n7, true);
         
-        n5.addArrete(n6, true);
-        n5.addArrete(n7, true);
+        n5.addArete(n6, true);
+        n5.addArete(n7, true);
         
-        n6.addArrete(n7, true);
+        n6.addArete(n7, true);
         
         sommets.add(n1);
         sommets.add(n2);
@@ -114,17 +221,7 @@ public class ProjetGraphe {
         return graphe;
     }
 
-    public static void WelshPowell(Graphe graphe, int tri) {
-        ArrayList<Noeud> listeSommets = graphe.getCopyOfSommets();
-        if(tri > 0) {
-            // Sens ascendant (sur les degrés)
-            Collections.sort(listeSommets);
-        } else if(tri < 0) {
-            // Sens descendant (sur les degrés)
-            Collections.sort(listeSommets, Collections.reverseOrder());
-        } else {
-            // aléatoire
-        }
+    public static ArrayList<Noeud> WelshPowell(ArrayList<Noeud> listeSommets) {
         ArrayList<Noeud> colories = new ArrayList<>();
         
         Noeud x = null;
@@ -157,22 +254,11 @@ public class ProjetGraphe {
             }
             
         }
-        
-        printColoredGraphe(colories);
-        System.out.println("nombre de couleurs : " + colories.stream().map(s -> s.getColor()).distinct().count());
+
+        return colories;
     }
 
-    public static void Dsatur(Graphe graphe, int tri) {
-        ArrayList<Noeud> listeSommets = graphe.getCopyOfSommets();
-        if(tri > 0) {
-            // Sens ascendant (sur les degrés)
-            Collections.sort(listeSommets);
-        } else if(tri < 0) {
-            // Sens descendant (sur les degrés)
-            Collections.sort(listeSommets, Collections.reverseOrder());
-        } else {
-            // aléatoire
-        }
+    public static ArrayList<Noeud> Dsatur(ArrayList<Noeud> listeSommets) {
         ArrayList<Noeud> colories = new ArrayList<>();
         
         Noeud x = null;
@@ -210,28 +296,17 @@ public class ProjetGraphe {
             }
             
         }
-        
-        printColoredGraphe(colories);
-        System.out.println("nombre de couleurs : " + colories.stream().map(s -> s.getColor()).distinct().count());
         /*
         Idem que WelshPowell
         On met en priorité les sommets avec beaucoup de voisins coloriés
         Aide : http://prolland.free.fr/works/research/dsatphp/dsat.txt
         http://prolland.free.fr/Cours/Cycle2/Maitrise/GraphsTheory/TP/PrgGraphDsat/dsat_simple_c.txt
          */
+
+        return colories;
     }
 
-    public static void Greedy(Graphe graphe, int tri) {
-        ArrayList<Noeud> listeSommets = graphe.getCopyOfSommets();
-        if(tri > 0) {
-            // Sens ascendant (sur les degrés)
-            Collections.sort(listeSommets);
-        } else if(tri < 0) {
-            // Sens descendant (sur les degrés)
-            Collections.sort(listeSommets, Collections.reverseOrder());
-        } else {
-            // aléatoire
-        }
+    public static ArrayList<Noeud> Greedy(ArrayList<Noeud> listeSommets) {
         ArrayList<Noeud> colories = new ArrayList<>();
         
         Noeud x = null;
@@ -242,16 +317,8 @@ public class ProjetGraphe {
             colories.add(x);
             listeSommets.remove(x);
         }
-        
-        printColoredGraphe(colories);
-        System.out.println("nombre de couleurs : " + colories.stream().map(s -> s.getColor()).distinct().count());
-    }
-    
-    public static List<Noeud> sort() {
-        // Utiliser la méthode Collections.sort(List<>)
-        // Attention, elle trie directement la liste,
-        // elle n'en renvoie pas une nouvelle
-        return new ArrayList<Noeud>();
+
+        return colories;
     }
     
     public static void printColoredGraphe(ArrayList<Noeud> colories) {

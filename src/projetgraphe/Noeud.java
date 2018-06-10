@@ -19,16 +19,33 @@ public class Noeud implements Comparable {
         this.color = 0;
     }
 
-    public void addArrete(Noeud noeud) {
+    public Noeud(ArrayList<Noeud> list, int nb, int col) {
+        this.adjacents = list;
+        this.num = nb;
+        this.color = col;
+    }
+
+    /**
+     * Ajoute un arc en précisant avec quel autre noeud le noeud actuel est relié
+     *
+     * Cette méthode est surchargée pour pouvoir travailler indépendamment avec des arcs ou des arêtes
+     * @param noeud Noeud auquel celui-ci est relié
+     */
+    public void addArete(Noeud noeud) {
         if (!adjacents.contains(noeud)) {
             adjacents.add(noeud);
         }
     }
 
-    public void addArrete(Noeud noeud, boolean reflex) {
-        addArrete(noeud);
+    /**
+     * Ajoute une arête en précisant avec quel autre noeud le noeud actuel est relié
+     * @param noeud Noeud auquel celui-ci est relié
+     * @param reflex <em>True</em> si c'est une arête, <em>False</em> si c'est un arc
+     */
+    public void addArete(Noeud noeud, boolean reflex) {
+        addArete(noeud);
         if (reflex) {
-            noeud.addArrete(this);
+            noeud.addArete(this);
         }
     }
 
@@ -97,6 +114,19 @@ public class Noeud implements Comparable {
 
     public String getName() {
         return "Noeud" + num;
+    }
+
+    public void reset() {
+        this.color = 0;
+    }
+
+    /**
+     * Mouais... Je pense que ça va induire plus d'erreurs qu'autre chose
+     * @return
+     */
+    public Noeud clone() {
+        Noeud n = new Noeud(adjacents, num, color);
+        return n;
     }
 
     @Override

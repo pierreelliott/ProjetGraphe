@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  *
  * @author axelb
  */
-public class Graphe {
+public class Graphe implements Cloneable {
 
     public Graphe() {
         this.sommets = new ArrayList<>();
@@ -64,7 +64,7 @@ public class Graphe {
             
             String arete[] = s.split(" ");
             sommets.get(Integer.parseInt(arete[0]))
-                    .addArrete(sommets.get(Integer.parseInt(arete[1])), true);
+                    .addArete(sommets.get(Integer.parseInt(arete[1])), true);
         }
         
         return new Graphe(sommets);
@@ -84,6 +84,16 @@ public class Graphe {
         return new ArrayList<>(sommets);
     }
 
+    public long getColorationNumber() { return nbCouleurs; }
+    public void setColorationNumber(long val) { nbCouleurs = val; }
+
+    public void resetColoration() {
+        for (Noeud n : sommets) {
+            n.reset();
+        }
+        nbCouleurs = 0;
+    }
+
     @Override
     public String toString() {
         String text = "Graphe : \n";
@@ -94,4 +104,5 @@ public class Graphe {
     }
 
     private ArrayList<Noeud> sommets;
+    private long nbCouleurs = 0;
 }
