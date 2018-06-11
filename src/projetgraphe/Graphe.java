@@ -44,19 +44,19 @@ public class Graphe implements Cloneable {
     
     public static Graphe loadFromString(String fileContent) {
         // Créer sommets
-        String[] tab = fileContent.split("--- Liste des sommets\n")[1]
-                .split("--- Liste des aretes\n");
+        String[] tab = fileContent.split("--- Liste des sommets" + System.lineSeparator())[1]
+                .split("--- Liste des aretes" + System.lineSeparator());
         // tab[0] -> sommets
         // tab[1] -> aretes
         
-        String[] sommetsString = tab[0].split("\n");
+        String[] sommetsString = tab[0].split(System.lineSeparator());
         ArrayList<Noeud> sommets = new ArrayList<>();
         for(String s : sommetsString) {
             if(!s.equals(""))
                 sommets.add(new Noeud());
         }
         // Ajouter sommets
-        String[] aretesString = tab[1].split("\n");
+        String[] aretesString = tab[1].split(System.lineSeparator());
         
         for(String s : aretesString) {
             if(s.equals(""))

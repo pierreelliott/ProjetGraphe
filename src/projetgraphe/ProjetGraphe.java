@@ -7,8 +7,6 @@ package projetgraphe;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 
 /**
  *
@@ -50,6 +48,7 @@ public class ProjetGraphe {
         System.out.println("--------------------------------------");
         System.out.println("-------- Test tri aléatoire --------");
         sens = 0;
+        extendedResults = true;
         testAlgo(1, sens, graphe, true, extendedResults);
         testAlgo(2, sens, graphe, true, extendedResults);
         testAlgo(3, sens, graphe, true, extendedResults);
@@ -88,12 +87,16 @@ public class ProjetGraphe {
         // (on oublie le temps de tri des sommets puisque ce n'est pas ce qui est intéressant ici)
         long startTime = System.currentTimeMillis();
 
-        if(numAlgo == 1) {
-            colories = Greedy(sommets);
-        } else if(numAlgo == 2) {
-            colories = WelshPowell(sommets);
-        } else {
-            colories = Dsatur(sommets);
+        switch (numAlgo) {
+            case 1:
+                colories = Greedy(sommets);
+                break;
+            case 2:
+                colories = WelshPowell(sommets);
+                break;
+            default:
+                colories = Dsatur(sommets);
+                break;
         }
 
         // Regarder le temps d'exécution
@@ -102,7 +105,7 @@ public class ProjetGraphe {
         long nbColors = colories.stream().map(s -> s.getColor()).distinct().count();
         graphe.setColorationNumber(nbColors);
 
-        System.out.println("======= Algo '"+ algos[numAlgo-1] +"' ======");
+        System.out.println("======= Algo '" + algos[numAlgo-1] + "' ======");
         if(printExtendedResults) {
             printColoredGraphe(colories);
         }
@@ -114,7 +117,7 @@ public class ProjetGraphe {
 
     public static ArrayList<Noeud> trierSommets(Graphe graphe, int tri) {
         ArrayList<Noeud> sommets = graphe.getCopyOfSommets();
-        ArrayList<Noeud> sommetsTries = new ArrayList<>();
+        ArrayList<Noeud> sommetsTries;
 
         // Tri
         if(tri > 0) {
@@ -127,17 +130,8 @@ public class ProjetGraphe {
             sommetsTries = sommets;
         } else {
             // Tri aléatoire
-            int size = sommets.size();
-            int i = 0;
-            Random rand = new Random();
-            while(!sommets.isEmpty()) {
-                int randomValue = rand.nextInt(sommets.size());
-                sommetsTries.add(sommets.get(randomValue));
-                sommets.remove(sommets.get(randomValue));
-                if(i == size) {
-                    System.out.println("Erreur tri aléatoire !");
-                }
-            }
+            Collections.shuffle(sommets);
+            sommetsTries = sommets;
         }
 
         return sommetsTries;
@@ -235,73 +229,61 @@ public class ProjetGraphe {
             listeSommets.remove(x);
             if(!listeSommets.isEmpty()) {
                 y = listeSommets.get(0);
-                for(int i = 0; i < listeSommets.size(); i++) {
-                    int index = listeSommets.indexOf(y);
+                int index = listeSommets.indexOf(y);
+                while(index < listeSommets.size()) {
                     if(!y.hasAdjacentWithColor(k)) {
                         y.setColor(k);
                         colories.add(y);
                         listeSommets.remove(y);
-                        if(index < listeSommets.size()) {
-                            y = listeSommets.get(index);
-                        }
                     } else {
-                        if(index+1 < listeSommets.size()) {
-                            y = listeSommets.get(index + 1);
-                        }
+                        index++;
+                    }
+                    
+                    if(index < listeSommets.size()) {
+                        y = listeSommets.get(index);
                     }
                 }
                 k++;
             }
-            
         }
 
         return colories;
     }
-
+    
     public static ArrayList<Noeud> Dsatur(ArrayList<Noeud> listeSommets) {
         ArrayList<Noeud> colories = new ArrayList<>();
         
+        ArrayList<Integer> dsatValues = new ArrayList<>();
+        for(Noeud n : listeSommets) {
+            dsatValues.add(n.dsatValue());
+        }
+        
         Noeud x = null;
-        Noeud y = null;
-        int k = 1;
         
         while(!listeSommets.isEmpty()) {
-            x = listeSommets.get(0);
-            x.setColor(k);
-            colories.add(x);
-            listeSommets.remove(x);
-            if(!listeSommets.isEmpty()) {
-                y = listeSommets.get(0);
-                for(int i = 0; i < listeSommets.size(); i++) {
-                    int index = listeSommets.indexOf(y);
-                    if(!y.hasAdjacentWithColor(k)) {
-                        y.setColor(k);
-                        colories.add(y);
-                        listeSommets.remove(y);
-                    }
-                    
-                    if(index+1 < listeSommets.size()) {
-                        int maxSatur = -1;
-                        Noeud tmp = null;
-                        for(int j = i; j < listeSommets.size(); j++) {
-                            if(listeSommets.get(j).dsatValue() > maxSatur) {
-                                maxSatur = listeSommets.get(j).dsatValue();
-                                tmp = listeSommets.get(j);
-                            }
-                        }
-                        y = tmp;
+            if(0 < listeSommets.size()) {
+                int maxSatur = -1;
+                Noeud tmp = null;
+                for(int j = 0; j < listeSommets.size(); j++) {
+                    if(listeSommets.get(j).dsatValue() > maxSatur) {
+                        maxSatur = listeSommets.get(j).dsatValue();
+                        tmp = listeSommets.get(j);
                     }
                 }
-                k++;
+                x = tmp;
             }
             
+            x.color();
+            colories.add(x);
+            listeSommets.remove(x);
         }
+        
         /*
         Idem que WelshPowell
         On met en priorité les sommets avec beaucoup de voisins coloriés
         Aide : http://prolland.free.fr/works/research/dsatphp/dsat.txt
         http://prolland.free.fr/Cours/Cycle2/Maitrise/GraphsTheory/TP/PrgGraphDsat/dsat_simple_c.txt
-         */
+        */
 
         return colories;
     }

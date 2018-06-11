@@ -161,5 +161,5 @@ public class Noeud implements Comparable {
     private int color;
     private int num;
 
-    private static int numero = 1;
+    private static int numero = 0;
 }
