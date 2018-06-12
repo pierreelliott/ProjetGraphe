@@ -39,7 +39,9 @@ public class Graphe implements Cloneable {
             Logger.getLogger(Graphe.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        return loadFromString(fileContent);
+        Graphe g = loadFromString(fileContent);
+        g.nom = filename.split(".txt")[0];
+        return g;
     }
     
     public static Graphe loadFromString(String fileContent) {
@@ -86,6 +88,7 @@ public class Graphe implements Cloneable {
 
     public long getColorationNumber() { return nbCouleurs; }
     public void setColorationNumber(long val) { nbCouleurs = val; }
+    public String getName() { return nom; }
 
     public void resetColoration() {
         for (Noeud n : sommets) {
@@ -105,4 +108,5 @@ public class Graphe implements Cloneable {
 
     private ArrayList<Noeud> sommets;
     private long nbCouleurs = 0;
+    private String nom;
 }

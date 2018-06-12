@@ -24,10 +24,87 @@ public class ProjetGraphe {
 //        testGraphe(graphe, "Graphe statique 1");
 //        graphe = createGraphe2();
 //        testGraphe(graphe, "Graphe statique 2");
-        graphe = Graphe.loadFromFile("crown10.txt");
-        testGraphe(graphe, "Graphe crown10");
-        graphe = Graphe.loadFromFile("queen5_5.txt");
-        testGraphe(graphe, "Graphe queen 5x5");
+//        graphe = Graphe.loadFromFile("crown10.txt");
+//        testGraphe(graphe, "Graphe crown10");
+//        graphe = Graphe.loadFromFile("queen5_5.txt");
+//        testGraphe(graphe, "Graphe queen 5x5");
+//        graphe = Graphe.loadFromFile("queen15_15.txt");
+//        testGraphe(graphe, "Graphe queen 15x15");
+
+        String[] files = { "crown10.txt", "queen5_5.txt", "queen7_7.txt",
+                "queen9_9.txt", "queen11_11.txt", "queen13_13.txt", "queen15_15.txt"};
+        int nbEssais = 500;
+
+        benchmark(files, 1, nbEssais);
+        benchmark(files, 2, nbEssais);
+    }
+
+    public static void benchmark(String[] files, int numAlgo, int nbEssais) {
+        long[][] bench;
+        Graphe graphe;
+        System.out.println("===== Benchmark de " + getNomAlgo(numAlgo) + " ===");
+
+        System.out.println("------- Décroissant ------");
+        for(String file: files) {
+            graphe = Graphe.loadFromFile(file);
+            bench = benchmarkAlgo(graphe, numAlgo, nbEssais, -1);
+            printBenchmark(bench);
+        }
+
+        System.out.println("-------- Croissant -------");
+        for(String file: files) {
+            graphe = Graphe.loadFromFile(file);
+            bench = benchmarkAlgo(graphe, numAlgo, nbEssais, 1);
+            printBenchmark(bench);
+        }
+
+        System.out.println("-------- Aléatoire -------");
+        for(String file: files) {
+            graphe = Graphe.loadFromFile(file);
+            bench = benchmarkAlgo(graphe, numAlgo, nbEssais, 0);
+            printBenchmark(bench);
+        }
+    }
+
+    public static long[][] benchmarkAlgo(Graphe graphe, int numAlgo, int nbEssais, int sens) {
+        long[][] bench = new long[nbEssais][2];
+
+        for(int i = 0; i < nbEssais; i++) {
+            bench[i] = testAlgo(numAlgo, sens, graphe, true, false);
+        }
+
+        return bench;
+    }
+
+    public static void printBenchmark(long[][] tab) {
+        long[][] b = { { Long.MAX_VALUE, 0, 0 }, { Long.MAX_VALUE, 0, 0 } };
+        // b[0] -> le temps (en millisecondes)
+        // b[1] -> la coloration
+        for(long[] vals : tab) {
+//            System.out.println(vals[0] + "\t" + vals[1]);
+
+            // Pour le temps
+            if(vals[0] < b[0][0]) b[0][0] = vals[0]; // Cherche Min
+            b[0][1] += vals[0]; // Additionne
+            if(vals[0] > b[0][2]) b[0][2] = vals[0]; // Cherche Max
+
+            // Pour la coloration
+            if(vals[1] < b[1][0]) b[1][0] = vals[1]; // Cherche Min
+            b[1][1] += vals[1]; // Additionne
+            if(vals[1] > b[1][2]) b[1][2] = vals[1]; // Cherche Max
+        }
+
+        System.out.print(/*"Temps exec :\t" + */b[0][0] + "\t" + b[0][1]/(float)tab.length + "\t" + b[0][2]);
+        System.out.print("\t");
+        System.out.println(/*"Coloration :\t" + */b[1][0] + "\t" + b[1][1]/(float)tab.length + "\t" + b[1][2]);
+    }
+
+    public static String getNomAlgo(int num) {
+        switch (num) {
+            case 1: return "Greedy";
+            case 2: return "WelshPowell";
+            default: return "Dsatur";
+        }
     }
 
     public static void testGraphe(Graphe graphe, String nomTest) {
@@ -48,7 +125,7 @@ public class ProjetGraphe {
         System.out.println("--------------------------------------");
         System.out.println("-------- Test tri aléatoire --------");
         sens = 0;
-        extendedResults = true;
+//        extendedResults = true;
         testAlgo(1, sens, graphe, true, extendedResults);
         testAlgo(2, sens, graphe, true, extendedResults);
         testAlgo(3, sens, graphe, true, extendedResults);
@@ -73,11 +150,16 @@ public class ProjetGraphe {
         Dsatur(trierSommets(graphe, sens));
     }
 
-    public static long testAlgo(int numAlgo, int sensDeTri, Graphe graphe,
+    public static long[] testAlgo(int numAlgo, int sensDeTri, Graphe graphe,
                                 boolean resetPreviousColoration, boolean printExtendedResults) {
         if(resetPreviousColoration) {
             graphe.resetColoration();
         }
+
+        // Mise à faux pour les benchmarks
+        // Cela permet d'afficher le nom de l'algo, son temps d'exécution et le nombre de couleurs utilisées
+        // À ne pas confondre avec "printExtendedResults" qui affiche le graphe entier avec les couleurs
+        boolean printSimpleResult = false;
 
         ArrayList<Noeud> sommets = trierSommets(graphe, sensDeTri);
         ArrayList<Noeud> colories;
@@ -105,14 +187,18 @@ public class ProjetGraphe {
         long nbColors = colories.stream().map(s -> s.getColor()).distinct().count();
         graphe.setColorationNumber(nbColors);
 
-        System.out.println("======= Algo '" + algos[numAlgo-1] + "' ======");
+        if(printSimpleResult) {
+            System.out.println("======= Algo '" + algos[numAlgo-1] + "' ======");
+            System.out.println("Nombre de couleurs : " + nbColors);
+            System.out.println("Temps d'exécution : " + elapsedTime + " milliseconde(s)");
+        }
+
         if(printExtendedResults) {
             printColoredGraphe(colories);
         }
-        System.out.println("Nombre de couleurs : " + nbColors);
-        System.out.println("Temps d'exécution : " + elapsedTime + " milliseconde(s)");
 
-        return elapsedTime;
+
+        return new long[]{elapsedTime, nbColors};
     }
 
     public static ArrayList<Noeud> trierSommets(Graphe graphe, int tri) {
