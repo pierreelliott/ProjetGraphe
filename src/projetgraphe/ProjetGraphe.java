@@ -33,10 +33,11 @@ public class ProjetGraphe {
 
         String[] files = { "crown10.txt", "queen5_5.txt", "queen7_7.txt",
                 "queen9_9.txt", "queen11_11.txt", "queen13_13.txt", "queen15_15.txt"};
-        int nbEssais = 500;
+        int nbEssais = 5000;
 
-        benchmark(files, 1, nbEssais);
-        benchmark(files, 2, nbEssais);
+//        benchmark(files, 1, nbEssais);
+//        benchmark(files, 2, nbEssais);
+        benchmark(files, 3, nbEssais);
     }
 
     public static void benchmark(String[] files, int numAlgo, int nbEssais) {
@@ -339,20 +340,22 @@ public class ProjetGraphe {
     public static ArrayList<Noeud> Dsatur(ArrayList<Noeud> listeSommets) {
         ArrayList<Noeud> colories = new ArrayList<>();
         
-        ArrayList<Integer> dsatValues = new ArrayList<>();
-        for(Noeud n : listeSommets) {
-            dsatValues.add(n.dsatValue());
-        }
+//        ArrayList<Integer> dsatValues = new ArrayList<>();
+//        for(Noeud n : listeSommets) {
+//            dsatValues.add(n.dsatValue());
+//        }
         
         Noeud x = null;
+        int dsat;
         
         while(!listeSommets.isEmpty()) {
             if(0 < listeSommets.size()) {
                 int maxSatur = -1;
                 Noeud tmp = null;
                 for(int j = 0; j < listeSommets.size(); j++) {
-                    if(listeSommets.get(j).dsatValue() > maxSatur) {
-                        maxSatur = listeSommets.get(j).dsatValue();
+                    dsat = listeSommets.get(j).dsatValue();
+                    if(dsat > maxSatur) {
+                        maxSatur = dsat;
                         tmp = listeSommets.get(j);
                     }
                 }
